@@ -53,8 +53,10 @@ func calculate(input string) (string, error) {
 	// Находим индекс оператора в строке
 	for i, char := range input {
 		if strings.ContainsRune(operators, char) {
+			if operatorIndex != -1 {
+				return "", fmt.Errorf("Ты ввел больше двух операндов...такое я пока что не умею считать")
+			}
 			operatorIndex = i
-			break
 		}
 	}
 
@@ -72,7 +74,7 @@ func calculate(input string) (string, error) {
 
 	// Проверяем, используется ли одна система счисления (римская или арабская)
 	if !isRoman && !isNumeric {
-		return "", fmt.Errorf("Использование разных систем счисления")
+		return "", fmt.Errorf("Ты по-моему перепутал...такое я не посчитаю")
 	}
 
 	var a, b int
@@ -86,6 +88,17 @@ func calculate(input string) (string, error) {
 		// Сканируем операнды как целые числа
 		fmt.Sscan(operand1, &a)
 		fmt.Sscan(operand2, &b)
+
+		// Проверка чисел на соответствие диапазону
+		a, err := strconv.Atoi(operand1)
+		if err != nil || a < 1 || a > 10 {
+			return "", fmt.Errorf("Число должно быть в диапазоне от 1 до 10")
+		}
+
+		b, err := strconv.Atoi(operand2)
+		if err != nil || b < 1 || b > 10 {
+			return "", fmt.Errorf("Число должно быть в диапазоне от 1 до 10")
+		}
 	}
 
 	result, err := performOperation(a, b, operator)
@@ -134,11 +147,20 @@ func performOperation(a, b int, operator string) (int, error) {
 
 func isRomanNumeral(s string) bool {
 	validChars := "IVXLCDM"
+	invalidPatterns := []string{"IIII", "VV", "XXXX", "LL", "CCCC", "DD", "MMMM"}
+
+	for _, pattern := range invalidPatterns {
+		if strings.Contains(s, pattern) {
+			return false
+		}
+	}
+
 	for _, char := range s {
 		if !strings.ContainsRune(validChars, char) {
 			return false
 		}
 	}
+
 	return true
 }
 
